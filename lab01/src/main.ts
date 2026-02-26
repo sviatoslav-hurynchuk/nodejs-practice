@@ -1,9 +1,9 @@
 import {
     delay,
-    fetchUserProfiles,
+    fetchUserProfiles, processInBatches, raceWithTimeout,
     retryOperation,
-    processInBatches,
-    raceWithTimeout
+    /*processInBatches,
+    raceWithTimeout*/
 } from './async-funcs';
 
 async function main(): Promise<void> {
@@ -20,25 +20,28 @@ async function main(): Promise<void> {
         return 'Успіх!';
     }, 3);
     console.log(result);
+
     console.log('\n=== Тест 3: Batch обробка ===');
     const items: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const processed = await processInBatches(
         items,
         3,
         async (batch: number[]) => {
-            await delay(50);
+            await delay(1000);
             return batch.map(n => n * 2);
         }
     );
     console.log('Оброблено:', processed);
-    console.log('\n=== Тест 4: Timeout ===');
-    try {
-        await raceWithTimeout(delay(200), 100);
-    } catch (err) {
-        if (err instanceof Error) {
-            console.error('Timeout:', err.message);
-        }
+
+
+console.log('\n=== Тест 4: Timeout ===');
+try {
+    await raceWithTimeout(delay(200), 100);
+} catch (err) {
+    if (err instanceof Error) {
+        console.error('Timeout:', err.message);
     }
+}
 }
 
 main().catch(console.error);
