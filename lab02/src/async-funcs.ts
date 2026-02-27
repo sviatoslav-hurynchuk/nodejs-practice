@@ -50,12 +50,13 @@ export async function retryOperation<T>(
     throw new Error('Unknown error');
 }
 
-export async function processInBatches<T, R>(
-    items: T[],
+export async function processInBatches(
+    items: number[],
     batchSize: number,
-    processor: (batch: T[]) => Promise<R[]>
-): Promise<R[]> {
-    const results: R[] = [];
+    processor: (batch: number[]) => Promise<number[]>
+): Promise<number[]> {
+    const results: number[] = [];
+
     const totalBatches = Math.ceil(items.length / batchSize);
 
     for (let i = 0; i < items.length; i += batchSize) {
@@ -69,6 +70,7 @@ export async function processInBatches<T, R>(
 
         results.push(...batchResults);
     }
+
     return results;
 }
 
