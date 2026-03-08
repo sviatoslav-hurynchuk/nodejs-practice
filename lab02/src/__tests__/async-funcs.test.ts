@@ -105,6 +105,13 @@ describe('retryOperation', () => {
         await assertion;
         expect(operation).toHaveBeenCalledTimes(3); 
     });
+    it('має викинути Unknown error, якщо передати maxRetries = 0', async () => {
+        const operation = jest.fn().mockResolvedValue('Успіх');
+
+        const promise = retryOperation(operation, 0);
+
+        await expect(promise).rejects.toThrow('Unknown error');
+    });
 });
 
 describe('processInBatches', () => {
