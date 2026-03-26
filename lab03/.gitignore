@@ -1,0 +1,25 @@
+# Залежності Node.js
+node_modules/
+
+# Логи помилок npm/yarn
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Результат компіляції TypeScript (папка dist або build)
+dist/
+build/
+*.tsbuildinfo
+
+# Налаштування редакторів (WebStorm, VS Code)
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Системні файли (Mac/Windows)
+.DS_Store
+Thumbs.db
+
+# Змінні середовища (безпека)
+.env
