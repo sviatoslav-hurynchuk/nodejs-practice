@@ -10,8 +10,6 @@ export interface ICar {
     carAge?: number;
 }
 
-export type ICarDocument = HydratedDocument<ICar>;
-
 const carSchema = new Schema<ICar>({
     model: {
         type: String,
