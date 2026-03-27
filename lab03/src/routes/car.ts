@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
-import {createCar, deleteCar, getAllCars, getCarById, updateCar} from "../storage/entity";
-import {createCarSchema, updateCarSchema} from "../schemas/entity.schema";
+import {createCar, deleteCar, getAllCars, getCarById, updateCar} from "../storage/car";
+import {createCarSchema, updateCarSchema} from "../schemas/car.schema";
 import {validate} from "../middleware/validate";
 
 const  router = Router();

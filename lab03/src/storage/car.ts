@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import { CarEntity, CreateCarInput } from '../schemas/entity.schema';
+import { CarEntity, CreateCarInput } from '../schemas/car.schema';
 
 const carsStorage = new Map<string, CarEntity>();
 

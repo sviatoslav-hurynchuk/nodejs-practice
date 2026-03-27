@@ -1,6 +1,6 @@
 import express = require('express');
 import cors = require('cors');
-import carRoutes from './routes/entity';
+import carRoutes from './routes/car';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();

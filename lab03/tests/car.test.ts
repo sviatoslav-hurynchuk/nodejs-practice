@@ -1,6 +1,6 @@
 import request = require('supertest');
 import app from '../src/app';
-import { resetCars } from '../src/storage/entity';
+import { resetCars } from '../src/storage/car';
 
 beforeEach(() => {
     resetCars();
