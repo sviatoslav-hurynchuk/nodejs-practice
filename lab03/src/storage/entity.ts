@@ -6,13 +6,17 @@ const carsStorage = new Map<string, CarEntity>();
 export const getAllCars = (filters?: { fuelType?: string; year?: number; market?: string }): CarEntity[] => {
     let cars = Array.from(carsStorage.values());
 
-    if (filters?.fuelType) {
+    if (!filters || Object.keys(filters).length === 0) {
+        return cars;
+    }
+
+    if (filters.fuelType) {
         cars = cars.filter(car => car.fuelType === filters.fuelType);
     }
-    if (filters?.year) {
+    if (filters.year) {
         cars = cars.filter(car => car.year === Number(filters.year));
     }
-    if (filters?.market) {
+    if (filters.market) {
         cars = cars.filter(car => car.market === filters.market);
     }
 

@@ -25,7 +25,7 @@ describe('Cars API Integration Tests', () => {
             expect(res.body).toHaveProperty('createdAt');
         });
 
-        it('2. should return 400 if validation fails (missing required field)', async () => {
+        it('2. should return 400 if validation fails', async () => {
             const res = await request(app)
                 .post('/cars')
                 .send({ year: 2022 });
@@ -59,30 +59,42 @@ describe('Cars API Integration Tests', () => {
             expect(res.body).toHaveLength(2);
         });
 
-        it('6. should filter cars by ALL query parameters', async () => {
-            
+        it('6. should filter cars by ALL query parameters and combinations', async () => {
             await request(app).post('/cars').send({ model: 'Old US Car', year: 2000, fuelType: 'petrol', market: 'US' });
             await request(app).post('/cars').send({ model: 'New Euro EV', year: 2023, fuelType: 'electric', market: 'European' });
             await request(app).post('/cars').send({ model: 'New Asian Petrol', year: 2023, fuelType: 'petrol', market: 'Asian' });
 
-            
             const resYear = await request(app).get('/cars?year=2023');
             expect(resYear.status).toBe(200);
             expect(resYear.body).toHaveLength(2);
 
-            
             const resFuel = await request(app).get('/cars?fuelType=petrol');
             expect(resFuel.body).toHaveLength(2);
 
-            
             const resMarket = await request(app).get('/cars?market=Asian');
             expect(resMarket.body).toHaveLength(1);
             expect(resMarket.body[0].model).toBe('New Asian Petrol');
 
-            
+            const resYearAndFuel = await request(app).get('/cars?year=2023&fuelType=petrol');
+            expect(resYearAndFuel.body).toHaveLength(1);
+
+            const resYearAndMarket = await request(app).get('/cars?year=2023&market=European');
+            expect(resYearAndMarket.body).toHaveLength(1);
+
+            const resFuelAndMarket = await request(app).get('/cars?fuelType=petrol&market=US');
+            expect(resFuelAndMarket.body).toHaveLength(1);
+
             const resCombined = await request(app).get('/cars?year=2023&fuelType=electric&market=European');
             expect(resCombined.body).toHaveLength(1);
             expect(resCombined.body[0].model).toBe('New Euro EV');
+        });
+
+        it('16. should handle query with empty or irrelevant parameters', async () => {
+            await request(app).post('/cars').send({ model: 'Car A', year: 2020, fuelType: 'petrol' });
+
+            const res = await request(app).get('/cars?someRandomParam=true');
+            expect(res.status).toBe(200);
+            expect(res.body).toHaveLength(1);
         });
     });
 
