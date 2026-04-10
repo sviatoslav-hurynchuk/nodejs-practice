@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "dev3": "ts-node lab03/src/server.ts",
     "test": "jest",
     "test:watch": "jest --watch",
