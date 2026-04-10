@@ -1,65 +1,67 @@
-import * as crypto from 'crypto';
-import { CarEntity, CreateCarInput } from '../schemas/car.schema';
+import { CarModel } from '../models/car.model';
+import { CreateCarInput } from '../schemas/car.schema';
 
-const carsStorage = new Map<string, CarEntity>();
+interface QueryParams {
+    fuelType?: string;
+    year?: string;
+    market?: string;
+    sort?: string;
+    page?: string;
+    limit?: string;
+}
 
-export const getAllCars = (filters?: { fuelType?: string; year?: number; market?: string }): CarEntity[] => {
-    let cars = Array.from(carsStorage.values());
+export const getAllCars = async (queryParams: QueryParams = {}) => {
+    const { fuelType, year, market, sort, page, limit } = queryParams;
 
-    if (!filters || Object.keys(filters).length === 0) {
-        return cars;
+    const filter: any = {};
+    if (fuelType) filter.fuelType = fuelType;
+    if (year) filter.year = Number(year);
+    if (market) filter.market = market;
+
+    let sortOption: any = { createdAt: -1 };
+    if (sort) {
+        const sortField = sort.startsWith('-') ? sort.substring(1) : sort;
+        const sortOrder = sort.startsWith('-') ? -1 : 1;
+        sortOption = { [sortField]: sortOrder };
     }
 
-    if (filters.fuelType) {
-        cars = cars.filter(car => car.fuelType === filters.fuelType);
-    }
-    if (filters.year) {
-        cars = cars.filter(car => car.year === Number(filters.year));
-    }
-    if (filters.market) {
-        cars = cars.filter(car => car.market === filters.market);
-    }
+    const pageNumber = parseInt(page || '1', 10);
+    const limitNumber = parseInt(limit || '10', 10);
+    const skip = (pageNumber - 1) * limitNumber;
 
-    return cars;
-};
+    const [data, totalCount] = await Promise.all([
+        CarModel.find(filter).sort(sortOption).skip(skip).limit(limitNumber),
+        CarModel.countDocuments(filter)
+    ]);
 
-export const getCarById = (id: string): CarEntity | undefined => {
-    return carsStorage.get(id);
-};
+    const totalPages = Math.ceil(totalCount / limitNumber);
 
-export const createCar = (data: CreateCarInput): CarEntity => {
-    const id = crypto.randomUUID();
-    const now = new Date();
-
-    const newCar: CarEntity = {
-        ...data,
-        id,
-        createdAt: now,
-        updatedAt: now,
+    return {
+        data,
+        pagination: {
+            page: pageNumber,
+            limit: limitNumber,
+            total: totalCount,
+            pages: totalPages
+        }
     };
-
-    carsStorage.set(id, newCar);
-    return newCar;
 };
 
-export const updateCar = (id: string, data: Partial<CreateCarInput>): CarEntity | null => {
-    const existingCar = carsStorage.get(id);
-    if (!existingCar) return null;
-
-    const updatedCar: CarEntity = {
-        ...existingCar,
-        ...data,
-        updatedAt: new Date(),
-    };
-
-    carsStorage.set(id, updatedCar);
-    return updatedCar;
+export const getCarById = async (id: string) => {
+    return CarModel.findById(id);
 };
 
-export const deleteCar = (id: string): boolean => {
-    return carsStorage.delete(id);
+export const createCar = async (data: CreateCarInput) => {
+    return CarModel.create(data);
 };
 
-export const resetCars = (): void => {
-    carsStorage.clear();
+export const updateCar = async (id: string, data: Partial<CreateCarInput>) => {
+    return CarModel.findByIdAndUpdate(id, data, {
+        new: true,
+        runValidators: true
+    });
+};
+
+export const deleteCar = async (id: string) => {
+    return CarModel.findByIdAndDelete(id);
 };

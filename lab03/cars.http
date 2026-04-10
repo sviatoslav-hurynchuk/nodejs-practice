@@ -1,0 +1,65 @@
+### 1. Отримати всі автомобілі (GET 200)
+GET http://localhost:3000/cars
+Accept: application/json
+
+###
+
+### 2. Отримати тільки європейські (GET 200)
+GET http://localhost:3000/cars/european
+Accept: application/json
+
+###
+
+### 3. Створити нове авто (POST 201)
+POST http://localhost:3000/cars
+Content-Type: application/json
+
+{
+  "model": "BMW X5",
+  "year": 2022,
+  "fuelType": "diesel",
+  "market": "European"
+}
+
+> {%
+    client.global.set("carId", response.body.id);
+%}
+
+###
+
+### 4. Отримати авто за ID (GET 200)
+# Використовуємо змінну {{carId}}, яку зберегли на попередньому кроці, або встав сюди реальний ID руками
+GET http://localhost:3000/cars/{{carId}}
+Accept: application/json
+
+###
+
+### 5. Оновити авто (PATCH 200)
+PATCH http://localhost:3000/cars/{{carId}}
+Content-Type: application/json
+
+{
+  "year": 2024
+}
+
+###
+
+### 6. Видалити авто (DELETE 204)
+DELETE http://localhost:3000/cars/{{carId}}
+
+###
+
+### 7. Перевірка валідації (помилка 400 Zod)
+POST http://localhost:3000/cars
+Content-Type: application/json
+
+{
+  "model": "В",
+  "year": 3000
+}
+
+###
+
+### 8. Перевірка пагінації та фільтрації (Завдання 6)
+GET http://localhost:3000/cars?fuelType=diesel&sort=-year&limit=2&page=1
+Accept: application/json

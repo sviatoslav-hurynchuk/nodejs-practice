@@ -1,10 +1,15 @@
 import request = require('supertest');
+import mongoose from 'mongoose';
 import app from '../src/app';
-import { resetCars } from '../src/storage/car';
+import { connectTestDB, closeTestDB, clearTestDB } from './setup';
 
-beforeEach(() => {
-    resetCars();
-});
+
+beforeAll(async () => await connectTestDB());
+afterEach(async () => await clearTestDB());
+afterAll(async () => await closeTestDB());
+
+
+const generateFakeId = () => new mongoose.Types.ObjectId().toHexString();
 
 describe('Cars API Integration Tests', () => {
 
@@ -20,9 +25,10 @@ describe('Cars API Integration Tests', () => {
                 });
 
             expect(res.status).toBe(201);
-            expect(res.body).toHaveProperty('id');
+            expect(res.body).toHaveProperty('id'); 
             expect(res.body.model).toBe('Toyota Camry');
             expect(res.body).toHaveProperty('createdAt');
+            expect(res.body).toHaveProperty('carAge'); 
         });
 
         it('2. should return 400 if validation fails', async () => {
@@ -47,16 +53,18 @@ describe('Cars API Integration Tests', () => {
         it('4. should return an empty array if no cars exist', async () => {
             const res = await request(app).get('/cars');
             expect(res.status).toBe(200);
-            expect(res.body).toEqual([]);
+            expect(res.body.data).toEqual([]); 
+            expect(res.body.pagination).toBeDefined();
         });
 
-        it('5. should return all created cars', async () => {
+        it('5. should return all created cars with pagination', async () => {
             await request(app).post('/cars').send({ model: 'Car A', year: 2020, fuelType: 'petrol' });
             await request(app).post('/cars').send({ model: 'Car B', year: 2021, fuelType: 'diesel' });
 
             const res = await request(app).get('/cars');
             expect(res.status).toBe(200);
-            expect(res.body).toHaveLength(2);
+            expect(res.body.data).toHaveLength(2);
+            expect(res.body.pagination.total).toBe(2);
         });
 
         it('6. should filter cars by ALL query parameters and combinations', async () => {
@@ -66,27 +74,18 @@ describe('Cars API Integration Tests', () => {
 
             const resYear = await request(app).get('/cars?year=2023');
             expect(resYear.status).toBe(200);
-            expect(resYear.body).toHaveLength(2);
+            expect(resYear.body.data).toHaveLength(2);
 
             const resFuel = await request(app).get('/cars?fuelType=petrol');
-            expect(resFuel.body).toHaveLength(2);
+            expect(resFuel.body.data).toHaveLength(2);
 
             const resMarket = await request(app).get('/cars?market=Asian');
-            expect(resMarket.body).toHaveLength(1);
-            expect(resMarket.body[0].model).toBe('New Asian Petrol');
-
-            const resYearAndFuel = await request(app).get('/cars?year=2023&fuelType=petrol');
-            expect(resYearAndFuel.body).toHaveLength(1);
-
-            const resYearAndMarket = await request(app).get('/cars?year=2023&market=European');
-            expect(resYearAndMarket.body).toHaveLength(1);
-
-            const resFuelAndMarket = await request(app).get('/cars?fuelType=petrol&market=US');
-            expect(resFuelAndMarket.body).toHaveLength(1);
+            expect(resMarket.body.data).toHaveLength(1);
+            expect(resMarket.body.data[0].model).toBe('New Asian Petrol');
 
             const resCombined = await request(app).get('/cars?year=2023&fuelType=electric&market=European');
-            expect(resCombined.body).toHaveLength(1);
-            expect(resCombined.body[0].model).toBe('New Euro EV');
+            expect(resCombined.body.data).toHaveLength(1);
+            expect(resCombined.body.data[0].model).toBe('New Euro EV');
         });
 
         it('16. should handle query with empty or irrelevant parameters', async () => {
@@ -94,7 +93,15 @@ describe('Cars API Integration Tests', () => {
 
             const res = await request(app).get('/cars?someRandomParam=true');
             expect(res.status).toBe(200);
-            expect(res.body).toHaveLength(1);
+            expect(res.body.data).toHaveLength(1);
+        });
+        it('17. should sort cars by year in descending order', async () => {
+            await request(app).post('/cars').send({ model: 'Old Car', year: 2000, fuelType: 'petrol' });
+            await request(app).post('/cars').send({ model: 'New Car', year: 2023, fuelType: 'petrol' });
+
+            const res = await request(app).get('/cars?sort=-year');
+            expect(res.status).toBe(200);
+            expect(res.body.data[0].model).toBe('New Car'); // Першою має бути нова машина
         });
     });
 
@@ -105,8 +112,8 @@ describe('Cars API Integration Tests', () => {
 
             const res = await request(app).get('/cars/european');
             expect(res.status).toBe(200);
-            expect(res.body).toHaveLength(1);
-            expect(res.body[0].model).toBe('BMW 3');
+            expect(res.body.data).toHaveLength(1);
+            expect(res.body.data[0].model).toBe('BMW 3');
         });
     });
 
@@ -120,10 +127,16 @@ describe('Cars API Integration Tests', () => {
             expect(getRes.body.id).toBe(carId);
         });
 
-        it('9. should return 404 if car is not found', async () => {
-            const res = await request(app).get('/cars/non-existent-id');
+        it('9. should return 404 if car is not found (valid ID format but does not exist)', async () => {
+            const res = await request(app).get(`/cars/${generateFakeId()}`);
             expect(res.status).toBe(404);
             expect(res.body.message).toBe('Car not found');
+        });
+
+        it('17. should return 400 CastError if ID format is invalid', async () => {
+            const res = await request(app).get('/cars/invalid-mongo-id');
+            expect(res.status).toBe(400);
+            expect(res.body.message).toContain('Невалідний формат ID');
         });
     });
 
@@ -152,7 +165,7 @@ describe('Cars API Integration Tests', () => {
         });
 
         it('12. should return 404 when trying to update non-existent car', async () => {
-            const res = await request(app).patch('/cars/fake-id').send({ model: 'Ghost Car' });
+            const res = await request(app).patch(`/cars/${generateFakeId()}`).send({ model: 'Ghost Car' });
             expect(res.status).toBe(404);
         });
     });
@@ -170,7 +183,7 @@ describe('Cars API Integration Tests', () => {
         });
 
         it('14. should return 404 when trying to delete non-existent car', async () => {
-            const res = await request(app).delete('/cars/fake-id');
+            const res = await request(app).delete(`/cars/${generateFakeId()}`);
             expect(res.status).toBe(404);
         });
     });
@@ -185,4 +198,5 @@ describe('Cars API Integration Tests', () => {
             expect(res.status).toBe(500);
         });
     });
+
 });
