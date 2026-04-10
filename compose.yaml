@@ -9,16 +9,27 @@ services:
       MONGO_INITDB_DATABASE: cars_db
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   app:
     build: .
     ports:
       - "3000:3000"
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     environment:
       PORT: 3000
       MONGODB_URI: mongodb://root:password@mongo:27017/cars_db?authSource=admin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   mongo-data:
