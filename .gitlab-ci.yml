@@ -1,0 +1,26 @@
+image: node:24
+
+stages:
+  - build
+  - test
+
+cache:
+  key:
+    files:
+      - lab03/package-lock.json
+  paths:
+    - lab03/node_modules/
+
+build-job:
+  stage: build
+  script:
+    - cd lab03
+    - npm ci
+    - npm run build
+
+test-job:
+  stage: test
+  script:
+    - cd lab03
+    - npm ci
+    - npm run test:coverage
