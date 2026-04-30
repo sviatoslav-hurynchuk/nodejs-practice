@@ -10,12 +10,18 @@ primary_region = 'fra'
 
 [http_service]
   internal_port = 3000
-
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "15s"
+    method = "GET"
+    timeout = "2s"
+    path = "/health"
 
 [[vm]]
   memory = '1gb'
