@@ -3,6 +3,7 @@ image: node:24
 stages:
   - build
   - test
+  - deploy
 
 cache:
   key:
@@ -24,3 +25,12 @@ test-job:
     - cd lab03
     - npm ci
     - npm run test:coverage
+
+deploy-job:
+  stage: deploy
+  image: flyio/flyctl:latest
+  script:
+    - cd lab03
+    - flyctl deploy --remote-only
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
