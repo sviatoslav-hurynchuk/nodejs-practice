@@ -10,10 +10,6 @@ jobs:
     name: Build & Test
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: ./lab03
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,7 +19,6 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: 'lab03/package-lock.json'
 
       - name: Install dependencies
         run: npm ci
@@ -38,10 +33,6 @@ jobs:
     name: Deploy to Fly.io
     needs: build-and-test
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: ./lab03
 
     steps:
       - name: Checkout code
