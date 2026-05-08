@@ -5,3 +5,18 @@ Content-Type: application/json
   "email": "user_success@example.com",
   "password": "password123"
 }
+
+###
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "user_success@example.com",
+  "password": "password123"
+}
+
+###
+POST http://localhost:3000/auth/refresh
+
+###
+POST http://localhost:3000/auth/logout

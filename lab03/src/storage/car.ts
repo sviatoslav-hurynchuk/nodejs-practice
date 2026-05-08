@@ -1,6 +1,8 @@
 import { CarModel } from '../models/car.model';
 import { CreateCarInput } from '../schemas/car.schema';
 
+type CreateOwnedCarInput = CreateCarInput & { ownerId: string };
+
 interface QueryParams {
     fuelType?: string;
     year?: string;
@@ -51,7 +53,7 @@ export const getCarById = async (id: string) => {
     return CarModel.findById(id);
 };
 
-export const createCar = async (data: CreateCarInput) => {
+export const createCar = async (data: CreateOwnedCarInput) => {
     return CarModel.create(data);
 };
 

@@ -1,10 +1,11 @@
-import { Schema, model} from 'mongoose';
+import { Schema, model, Types } from 'mongoose';
 
 export interface ICar {
     model: string;
     year: number;
     fuelType: string;
     market?: string;
+    ownerId: Types.ObjectId;
     createdAt?: Date;
     updatedAt?: Date;
     carAge?: number;
@@ -44,6 +45,11 @@ const carSchema = new Schema<ICar>({
             message: 'Невідомий ринок збуту'
         },
         default: 'Other'
+    },
+    ownerId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
 }, {
     timestamps: true,
