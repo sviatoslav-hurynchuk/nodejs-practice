@@ -1,0 +1,6 @@
+POST http://localhost:3000/auth/register
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}

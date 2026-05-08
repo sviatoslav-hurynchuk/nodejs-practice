@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - lab06
+      - lab07
 
 jobs:
   build-and-test:

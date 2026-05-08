@@ -1,6 +1,7 @@
 import express = require('express');
 import cors = require('cors');
 import carRoutes from './routes/car';
+import authRoutes from './routes/auth';
 import { errorHandler } from './middleware/errorHandler';
 import mongoose from "mongoose";
 
@@ -17,7 +18,7 @@ app.get('/health', (req, res) => {
 app.use(cors());
 app.use(express.json());
 
-
+app.use('/auth', authRoutes);
 app.use('/cars', carRoutes);
 
 app.use(errorHandler);
