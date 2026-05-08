@@ -4,7 +4,7 @@ import { validate } from '../middleware/validate';
 import { registerSchema } from '../schemas/auth.schema';
 
 const router = Router();
-
+console.log('Налаштовую роут /auth/register...');
 router.post('/register', validate(registerSchema), async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { email, password } = req.body;
